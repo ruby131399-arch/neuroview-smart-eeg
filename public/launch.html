@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Launching NeuroView...</title>
+    <!-- Include the fhirclient library -->
+    <script src="https://cdn.jsdelivr.net/npm/fhirclient@2.6.3/build/fhir-client.js"></script>
+</head>
+
+<body>
+    <div style="font-family: sans-serif; text-align: center; margin-top: 20%;">
+        <h1>Launching NeuroView...</h1>
+        <p>Please wait while we redirect you to the authorization server.</p>
+    </div>
+    <script>
+        // Use the FHIR.oauth2.authorize function to start the SMART launch
+        // Explicitly clear session storage to prevent "corrupted" state from interfering
+        sessionStorage.clear();
+
+        // Check for 'iss' in URL parameters
+        const urlParams = new URLSearchParams(window.location.search);
+        const hasIss = urlParams.has('iss');
+
+        const authOptions = {
+            clientId: "my_web_app",
+            scope: "launch/patient patient/Patient.read patient/Observation.read online_access openid profile",
+            redirectUri: "http://localhost:5173/index.html",
+        };
+
+        if (hasIss) {
+            // Explicitly set the issuer from the URL parameter to avoid any ambiguity
+            authOptions.iss = urlParams.get('iss');
+        } else {
+            // Default to SMART Health IT R4 Sandbox (Standalone Launch -> Patient Picker)
+            authOptions.iss = "https://launch.smarthealthit.org/v/r4/fhir";
+        }
+
+        FHIR.oauth2.authorize(authOptions)
+            .catch(function (e) {
+                console.error(e);
+                document.body.innerHTML += "<p style='color:red'>Authorization failed: " + e + "</p>";
+            });
+    </script>
+</body>
+
+</html>

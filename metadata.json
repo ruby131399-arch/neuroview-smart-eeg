@@ -1,0 +1,5 @@
+{
+  "name": "NeuroView SMART EEG",
+  "description": "A clinical-grade SMART on FHIR application for visualizing, analyzing, and annotating EEG data from uploaded CSV/GZ files.",
+  "requestFramePermissions": []
+}
