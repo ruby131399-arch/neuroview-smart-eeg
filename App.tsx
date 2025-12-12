@@ -68,13 +68,24 @@ const App: React.FC<AppProps> = ({ client }) => {
       if (sHandle) {
         setStoredSettingsName(sHandle.name);
         try {
-          // Check if we already have permission
-          if ((await sHandle.queryPermission({ mode: 'readwrite' })) === 'granted') {
+          const permission = await sHandle.queryPermission({ mode: 'readwrite' });
+
+          if (permission === 'granted') {
+            // Already have permission
             setSettingsDirHandle(sHandle);
             hasSettings = true;
+          } else if (permission === 'prompt') {
+            // Need to request permission
+            const newPermission = await sHandle.requestPermission({ mode: 'readwrite' });
+            if (newPermission === 'granted') {
+              setSettingsDirHandle(sHandle);
+              hasSettings = true;
+            } else {
+              console.log("Settings folder permission denied");
+            }
           } else {
-            // Permission expired, will show setup screen
-            console.log("Settings folder permission expired");
+            // Permission denied
+            console.log("Settings folder permission denied");
           }
         } catch (err) {
           console.warn("Settings handle invalid:", err);
@@ -85,19 +96,28 @@ const App: React.FC<AppProps> = ({ client }) => {
       if (dHandle) {
         setStoredDataName(dHandle.name);
         try {
-          if ((await dHandle.queryPermission({ mode: 'readwrite' })) === 'granted') {
+          const permission = await dHandle.queryPermission({ mode: 'readwrite' });
+
+          if (permission === 'granted') {
             setDataDirHandle(dHandle);
             hasData = true;
+          } else if (permission === 'prompt') {
+            const newPermission = await dHandle.requestPermission({ mode: 'readwrite' });
+            if (newPermission === 'granted') {
+              setDataDirHandle(dHandle);
+              hasData = true;
+            } else {
+              console.log("Data folder permission denied");
+            }
           } else {
-            // Permission expired, will show setup screen
-            console.log("Data folder permission expired");
+            console.log("Data folder permission denied");
           }
         } catch (err) {
           console.warn("Data handle invalid:", err);
         }
       }
 
-      // Auto-skip setup if we have at least one stored handle
+      // Auto-skip setup if we have at least one folder with permission
       if (hasSettings || hasData) {
         setIsSettingUpStorage(false);
       } else {
